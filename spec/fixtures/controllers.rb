@@ -11,6 +11,10 @@ class FakeController < ActionController::Base
     param! :sort, String, in: %w(asc desc), default: "asc", transform: :downcase
     param! :page, Integer, default: 1
     param! :tags, Array
+    param! :exclusive_1, Integer
+    param! :exclusive_2, Integer
+
+    any_of! :exclusive_1, :exclusive_2
 
     render plain: "index"
   end

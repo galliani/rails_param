@@ -31,6 +31,13 @@ describe FakeController, type: :controller do
     end
   end
 
+  describe '#any_of!' do
+    it "raises InvalidParameterError if supplied with multiple params that have been specified" do
+      expect { get :index, prepare_params(exclusive_1: 100, exclusive_2: 200) }.to raise_error(
+        RailsParam::Param::InvalidParameterError, 'Parameters exclusive_1, exclusive_2 are mutually exclusive')
+    end    
+  end
+
   describe "nested_hash" do
     it "validates nested properties" do
       params = {

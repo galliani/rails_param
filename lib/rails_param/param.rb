@@ -67,7 +67,7 @@ module RailsParam
       end
     end
 
-    def one_of!(*names)
+    def any_of!(*names)
       count = 0
       names.each do |name|
         if params[name] and params[name].present?
@@ -80,6 +80,7 @@ module RailsParam
           end
     
           # do something with error object
+          raise InvalidParameterError, error
         end
       end
     end
