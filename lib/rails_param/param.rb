@@ -67,23 +67,22 @@ module RailsParam
       end
     end
 
-    # TODO: should we reintegrate this method?
-    # def one_of!(*names)
-    #   count = 0
-    #   names.each do |name|
-    #     if params[name] and params[name].present?
-    #       count += 1
-    #       next unless count > 1
-    #
-    #       error = "Parameters #{names.join(', ')} are mutually exclusive"
-    #       if content_type and content_type.match(mime_type(:json))
-    #         error = {message: error}.to_json
-    #       end
-    #
-    #       # do something with error object
-    #     end
-    #   end
-    # end
+    def one_of!(*names)
+      count = 0
+      names.each do |name|
+        if params[name] and params[name].present?
+          count += 1
+          next unless count > 1
+    
+          error = "Parameters #{names.join(', ')} are mutually exclusive"
+          if content_type and content_type.match(mime_type(:json))
+            error = {message: error}.to_json
+          end
+    
+          # do something with error object
+        end
+      end
+    end
 
     private
 
