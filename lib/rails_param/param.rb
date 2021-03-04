@@ -68,13 +68,22 @@ module RailsParam
     end
 
     def any_of!(*names)
+      parameters_list = names.join(', ')
+
+      at_least_one_present = (params.keys & names.map(&:to_s)).count > 0
+
+      raise(
+        InvalidParameterError,
+        "At least one of these parameters need to be present: #{parameters_list}"
+      ) unless at_least_one_present
+
       count = 0
       names.each do |name|
         if params[name] and params[name].present?
           count += 1
           next unless count > 1
     
-          error = "Parameters #{names.join(', ')} are mutually exclusive"
+          error = "Parameters #{parameters_list} are mutually exclusive"
           if content_type and content_type.match(mime_type(:json))
             error = {message: error}.to_json
           end

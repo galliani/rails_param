@@ -10,32 +10,47 @@ describe FakeController, type: :controller do
 
   describe "type coercion" do
     it "coerces to integer" do
-      get :index, prepare_params(page: "666")
+      get :index, prepare_params(exclusive_1: 100, page: "666")
 
       expect(controller.params[:page]).to eql(666)
     end
 
     it "raises InvalidParameterError if supplied an array instead of other type (prevent TypeError)" do
-      expect { get :index, prepare_params(page: ["a", "b", "c"]) }.to raise_error(
+      expect { get :index, prepare_params(exclusive_1: 100, page: ["a", "b", "c"]) }.to raise_error(
         RailsParam::Param::InvalidParameterError, %q('["a", "b", "c"]' is not a valid Integer))
     end
 
     it "raises InvalidParameterError if supplied an hash instead of other type (prevent TypeError)" do
-      expect { get :index, prepare_params(page: {"a" => "b", "c" => "d"}) }.to raise_error(
+      expect { get :index, prepare_params(exclusive_1: 100, page: {"a" => "b", "c" => "d"}) }.to raise_error(
         RailsParam::Param::InvalidParameterError, %q('{"a"=>"b", "c"=>"d"}' is not a valid Integer))
     end
 
     it "raises InvalidParameterError if supplied an hash instead of an array (prevent NoMethodError)" do
-      expect { get :index, prepare_params(tags: {"a" => "b", "c" => "d"}) }.to raise_error(
+      expect { get :index, prepare_params(exclusive_1: 100, tags: {"a" => "b", "c" => "d"}) }.to raise_error(
         RailsParam::Param::InvalidParameterError, %q('{"a"=>"b", "c"=>"d"}' is not a valid Array))
     end
   end
 
   describe '#any_of!' do
-    it "raises InvalidParameterError if supplied with multiple params that have been specified" do
-      expect { get :index, prepare_params(exclusive_1: 100, exclusive_2: 200) }.to raise_error(
-        RailsParam::Param::InvalidParameterError, 'Parameters exclusive_1, exclusive_2 are mutually exclusive')
-    end    
+    context 'if supplied multiple of specified params' do
+      it 'raises InvalidParameterError' do
+        expect { get :index, prepare_params(exclusive_1: 100, exclusive_2: 200) }.to raise_error(
+          RailsParam::Param::InvalidParameterError, 'Parameters exclusive_1, exclusive_2 are mutually exclusive')
+      end
+    end
+
+    context 'if supplied NONE of specified params' do
+      it 'raises InvalidParameterError' do
+        expect { get :index, prepare_params({}) }.to raise_error(
+          RailsParam::Param::InvalidParameterError, 'At least one of these parameters need to be present: exclusive_1, exclusive_2')
+      end
+    end
+
+    context 'if supplied with exactly ONE of specified params' do
+      it 'SHOULD NOT raise InvalidParameterError' do
+        expect { get :index, prepare_params(exclusive_1: 100) }.to_not raise_error(RailsParam::Param::InvalidParameterError)
+      end
+    end
   end
 
   describe "nested_hash" do
@@ -88,7 +103,7 @@ describe FakeController, type: :controller do
 
   describe "InvalidParameterError" do
     it "raises an exception with params attributes" do
-      expect { get :index, prepare_params(sort: "foo") }.to raise_error { |error|
+      expect { get :index, prepare_params(exclusive_1: 100, sort: "foo") }.to raise_error { |error|
         expect(error).to be_a(RailsParam::Param::InvalidParameterError)
         expect(error.param).to eql("sort")
         expect(error.options).to eql({:in => ["asc", "desc"], :default => "asc", :transform => :downcase})
@@ -98,7 +113,7 @@ describe FakeController, type: :controller do
 
   describe ":transform parameter" do
     it "applies transformations" do
-      get :index, prepare_params(sort: "ASC")
+      get :index, prepare_params(exclusive_1: 100, sort: "ASC")
 
       expect(controller.params[:sort]).to eql("asc")
     end
@@ -106,7 +121,7 @@ describe FakeController, type: :controller do
 
   describe "default values" do
     it "applies default values" do
-      get :index
+      get :index, prepare_params(exclusive_1: 100, sort: "ASC")
 
       expect(controller.params[:page]).to eql(1)
       expect(controller.params[:sort]).to eql("asc")
